@@ -44,10 +44,20 @@ const run = async() => {
       return res.send("done");
     })
 
+    app.get("/registered_users_of_palash_portfolio", async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    })
+
     app.post("/users_message", async (req, res) => {
       const data = req.body;
       const result = await usersMessageCollection.insertOne(data);
       res.send(result)
+    })
+
+    app.get("/users_message_to_palash", async (req, res) => {
+      const result = await usersMessageCollection.find().toArray();
+      res.send(result);
     })
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   }  finally {

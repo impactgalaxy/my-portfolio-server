@@ -3,7 +3,7 @@ const express = require("express");
 // const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 const app = express();
 require("dotenv").config()
@@ -34,7 +34,8 @@ const client = new MongoClient(uri, {
 const run = async() => {
   try {
     const usersCollection = client.db("MyPortfolio").collection("users");
-    const usersMessageCollection = client.db("MyPortfolio").collection("usersMessage")
+    const usersMessageCollection = client.db("MyPortfolio").collection("usersMessage");
+    const messengerCollection = client.db("MyPortfolio").collection("liveMessage");
 
     app.post("/nur_mohammad_palash_portfolios_users", async (req, res) => {
       const { uid, emailVerified, providerData } = req.body;
@@ -58,7 +59,37 @@ const run = async() => {
     app.get("/users_message_to_palash", async (req, res) => {
       const result = await usersMessageCollection.find().toArray();
       res.send(result);
+    });
+
+    app.post("/messages", async (req, res) => {
+      const body = req.body;
+      console.log(body);
+      const result = await messengerCollection.insertOne(body);
+      res.send(result);
+
+    });
+    app.get("/messengerMessage", async (req, res) => {
+      const result = await messengerCollection.find().toArray();
+      res.send(result);
+    });
+    app.get("/filteredMsg/:email", async (req, res) => {
+      const email = req.params;
+      const result = await messengerCollection.find(email).toArray();
+      res.send(result);
+    });
+
+    app.patch("/messageReplay", async (req, res) => {
+      const { replay, id } = req.body;
+      const query = { _id: new ObjectId(id) };
+      // const comment = await messengerCollection.findOne(query);
+      const setReplay = {
+        $set: { replay }
+      }
+      const result = await messengerCollection.updateOne(query, setReplay, { upsert: true });
+      console.log(replay, id)
+            res.send(result);
     })
+
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   }  finally {
     
